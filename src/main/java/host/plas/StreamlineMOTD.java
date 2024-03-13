@@ -1,13 +1,14 @@
 package host.plas;
 
+import host.plas.config.MOTDConfig;
 import lombok.Getter;
 import lombok.Setter;
 import net.streamline.api.modules.ModuleUtils;
 import net.streamline.api.modules.StreamlineModule;
-import net.streamline.thebase.lib.pf4j.PluginWrapper;
 import host.plas.events.MainListener;
 import host.plas.ratapi.MOTDExpansion;
 import host.plas.timers.MOTDRunner;
+import org.pf4j.PluginWrapper;
 
 public class StreamlineMOTD extends StreamlineModule {
     @Getter @Setter

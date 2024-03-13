@@ -1,5 +1,6 @@
-package host.plas;
+package host.plas.config;
 
+import host.plas.StreamlineMOTD;
 import lombok.Getter;
 import lombok.Setter;
 import net.streamline.api.SLAPI;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+@Setter
 @Getter
 public class MOTDConfig extends SimpleConfiguration {
     public enum SelectionType {
@@ -33,20 +35,13 @@ public class MOTDConfig extends SimpleConfiguration {
         ;
     }
 
-    @Setter
     private PingedResponse.Players sample;
-    @Setter
     private PingedResponse.Protocol version;
-    @Setter
     private String description;
-    @Setter
     private int currentSample, currentMotd = 0;
 
-    @Setter
     private String currentSampleText;
-    @Setter
     private int maxPlayersValue, onlinePlayersValue = 0;
-    @Setter
     private StreamlineFavicon favicon;
 
     public MOTDConfig() {

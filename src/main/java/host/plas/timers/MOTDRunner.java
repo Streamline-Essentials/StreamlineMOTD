@@ -4,11 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import net.streamline.api.scheduler.ModuleRunnable;
 import host.plas.StreamlineMOTD;
-import host.plas.MOTDConfig;
+import host.plas.config.MOTDConfig;
 
+@Setter
 @Getter
 public class MOTDRunner extends ModuleRunnable {
-    @Setter
     int runningTicks = 0;
 
     public MOTDRunner() {
