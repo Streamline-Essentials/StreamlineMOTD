@@ -3,14 +3,14 @@ package host.plas;
 import host.plas.config.MOTDConfig;
 import lombok.Getter;
 import lombok.Setter;
-import net.streamline.api.modules.ModuleUtils;
-import net.streamline.api.modules.StreamlineModule;
+import singularity.modules.ModuleUtils;
+import singularity.modules.CosmicModule;
 import host.plas.events.MainListener;
 import host.plas.ratapi.MOTDExpansion;
 import host.plas.timers.MOTDRunner;
 import org.pf4j.PluginWrapper;
 
-public class StreamlineMOTD extends StreamlineModule {
+public class StreamlineMOTD extends CosmicModule {
     @Getter @Setter
     private static StreamlineMOTD instance;
 

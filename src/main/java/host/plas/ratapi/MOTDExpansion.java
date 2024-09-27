@@ -1,7 +1,7 @@
 package host.plas.ratapi;
 
-import net.streamline.api.placeholders.expansions.RATExpansion;
-import net.streamline.api.placeholders.replaceables.IdentifiedReplaceable;
+import singularity.placeholders.expansions.RATExpansion;
+import singularity.placeholders.replaceables.IdentifiedReplaceable;
 import host.plas.StreamlineMOTD;
 
 public class MOTDExpansion extends RATExpansion {

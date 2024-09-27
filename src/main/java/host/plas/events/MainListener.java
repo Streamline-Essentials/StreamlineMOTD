@@ -1,6 +1,6 @@
 package host.plas.events;
 
-import net.streamline.api.events.server.ping.PingReceivedEvent;
+import singularity.events.server.ping.PingReceivedEvent;
 import host.plas.StreamlineMOTD;
 import host.plas.config.MOTDConfig;
 import tv.quaint.events.BaseEventListener;

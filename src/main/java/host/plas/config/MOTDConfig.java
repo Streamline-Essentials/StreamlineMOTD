@@ -4,9 +4,9 @@ import host.plas.StreamlineMOTD;
 import lombok.Getter;
 import lombok.Setter;
 import net.streamline.api.SLAPI;
-import net.streamline.api.modules.ModuleUtils;
-import net.streamline.api.objects.PingedResponse;
-import net.streamline.api.objects.StreamlineFavicon;
+import singularity.modules.ModuleUtils;
+import singularity.objects.CosmicFavicon;
+import singularity.objects.PingedResponse;
 import tv.quaint.storage.resources.flat.simple.SimpleConfiguration;
 import tv.quaint.utils.MathUtils;
 
@@ -19,6 +19,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Setter
 @Getter
@@ -42,7 +43,7 @@ public class MOTDConfig extends SimpleConfiguration {
 
     private String currentSampleText;
     private int maxPlayersValue, onlinePlayersValue = 0;
-    private StreamlineFavicon favicon;
+    private CosmicFavicon favicon;
 
     public MOTDConfig() {
         super("config.yml", StreamlineMOTD.getInstance().getDataFolder(), true);
@@ -128,57 +129,63 @@ public class MOTDConfig extends SimpleConfiguration {
     }
 
     public void updateResponse() {
-        updateFavicon();
+        CompletableFuture.runAsync(() -> {
+            updateFavicon();
 
-        updateMotd();
+            updateMotd();
 
-        updateSample();
+            updateSample();
 
-        updateVersion();
+            updateVersion();
+        });
     }
 
     public void updateMotd() {
-        List<String> list = getMotdList();
-        if (list != null) {
-            if (! list.isEmpty()) {
-                switch (getMotdSelection()) {
-                    case RANDOM:
-                        Random RNG = new Random();
-                        setDescription(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(list.get(RNG.nextInt(list.size())))));
-                        break;
-                    case SEQUENTIAL:
-                        if (currentMotd >= list.size()) {
-                            currentMotd = 0;
-                        }
-                        setDescription(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(list.get(currentMotd))));
+        CompletableFuture.runAsync(() -> {
+            List<String> list = getMotdList();
+            if (list != null) {
+                if (!list.isEmpty()) {
+                    switch (getMotdSelection()) {
+                        case RANDOM:
+                            Random RNG = new Random();
+                            setDescription(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(list.get(RNG.nextInt(list.size())))));
+                            break;
+                        case SEQUENTIAL:
+                            if (currentMotd >= list.size()) {
+                                currentMotd = 0;
+                            }
+                            setDescription(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(list.get(currentMotd))));
 
-                        currentMotd ++;
-                        break;
+                            currentMotd++;
+                            break;
+                    }
                 }
             }
-        }
+        });
     }
 
     public void updateSample() {
-        List<String> sampleList = getSampleList();
-        if (sampleList != null) {
-            if (! sampleList.isEmpty()) {
-                switch (getSampleSelection()) {
-                    case RANDOM:
-                        Random RNG = new Random();
-                        setCurrentSampleText(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(sampleList.get(RNG.nextInt(sampleList.size())))));
-                        break;
-                    case SEQUENTIAL:
-                        if (currentSample >= sampleList.size()) {
-                            currentSample = 0;
-                        }
-                        setCurrentSampleText(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(sampleList.get(currentSample))));
+        CompletableFuture.runAsync(() -> {
+            List<String> sampleList = getSampleList();
+            if (sampleList != null) {
+                if (! sampleList.isEmpty()) {
+                    switch (getSampleSelection()) {
+                        case RANDOM:
+                            Random RNG = new Random();
+                            setCurrentSampleText(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(sampleList.get(RNG.nextInt(sampleList.size())))));
+                            break;
+                        case SEQUENTIAL:
+                            if (currentSample >= sampleList.size()) {
+                                currentSample = 0;
+                            }
+                            setCurrentSampleText(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(sampleList.get(currentSample))));
 
-                        currentSample ++;
-                        break;
+                            currentSample ++;
+                            break;
+                    }
                 }
             }
-        }
+        });
     }
 
     public void updateVersion() {
@@ -247,7 +254,7 @@ public class MOTDConfig extends SimpleConfiguration {
         return getNewestDownloadIcon(newName, iteration + 1);
     }
 
-    public StreamlineFavicon getFavicon(String path) {
+    public CosmicFavicon getFavicon(String path) {
         try {
             URL url = null;
             if (path.contains("://")) {
@@ -291,7 +298,7 @@ public class MOTDConfig extends SimpleConfiguration {
                 StreamlineMOTD.getInstance().logWarning("Invalid favicon path: " + path);
                 return null;
             }
-            return StreamlineFavicon.createFromURL(url);
+            return CosmicFavicon.createFromURL(url);
         } catch (Exception e) {
             StreamlineMOTD.getInstance().logWarning(e.getStackTrace());
             return null;
