@@ -19,12 +19,11 @@ dependencies {
     compileOnly 'net.luckperms:api:5.4'
 
     // StreamlineCore
-    compileOnly 'com.github.Streamline-Essentials.StreamlineCore:StreamlineCore-API:master-SNAPSHOT'
-    annotationProcessor 'com.github.Streamline-Essentials.StreamlineCore:StreamlineCore-API:master-SNAPSHOT'
-
-    if (properties['include-bapi']) {
-        compileOnly 'com.github.Streamline-Essentials.StreamlineCore:StreamlineCore-BAPI:master-SNAPSHOT'
-        annotationProcessor 'com.github.Streamline-Essentials.StreamlineCore:StreamlineCore-BAPI:master-SNAPSHOT'
+    boolean includeBapi = rootProject.properties['include-bapi'].toString().toBoolean()
+    if (includeBapi) {
+        annotationProcessor(compileOnly("com.github.Streamline-Essentials.StreamlineCore:StreamlineCore-BAPI:${rootProject.properties['streamline.version'] ?: 'master-SNAPSHOT'}"))
+    } else {
+        annotationProcessor(compileOnly("com.github.Streamline-Essentials.StreamlineCore:StreamlineCore-API:${rootProject.properties['streamline.version'] ?: 'master-SNAPSHOT'}"))
     }
 }
 

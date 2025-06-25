@@ -1,11 +1,11 @@
 package host.plas.events;
 
+import gg.drak.thebase.events.BaseEventListener;
+import gg.drak.thebase.events.processing.BaseProcessor;
 import host.plas.events.own.MOTDSendEvent;
 import host.plas.StreamlineMOTD;
 import host.plas.config.MOTDConfig;
 import singularity.events.server.ping.PingReceivedEvent;
-import tv.quaint.events.BaseEventListener;
-import tv.quaint.events.processing.BaseProcessor;
 
 public class MainListener implements BaseEventListener {
     @BaseProcessor

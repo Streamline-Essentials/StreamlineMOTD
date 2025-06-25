@@ -1,5 +1,7 @@
 package host.plas.config;
 
+import gg.drak.thebase.storage.resources.flat.simple.SimpleConfiguration;
+import gg.drak.thebase.utils.MathUtils;
 import host.plas.StreamlineMOTD;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,8 +9,6 @@ import net.streamline.api.SLAPI;
 import singularity.modules.ModuleUtils;
 import singularity.objects.CosmicFavicon;
 import singularity.objects.PingedResponse;
-import tv.quaint.storage.resources.flat.simple.SimpleConfiguration;
-import tv.quaint.utils.MathUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -99,6 +99,7 @@ public class MOTDConfig extends SimpleConfiguration {
                 from.setPlayers(from.getPlayers());
             }
         }
+
         if (isVersionEnabled()) {
             if (getVersion() != null) {
                 from.setVersion(getVersion());
