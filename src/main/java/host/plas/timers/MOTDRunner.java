@@ -1,31 +1,39 @@
 package host.plas.timers;
 
+import host.plas.data.UpdateType;
 import lombok.Getter;
 import lombok.Setter;
 import singularity.scheduler.ModuleRunnable;
 import host.plas.StreamlineMOTD;
-import host.plas.config.MOTDConfig;
 
 @Setter
 @Getter
 public class MOTDRunner extends ModuleRunnable {
-    int runningTicks = 0;
+    long runningTicks = 0;
 
     public MOTDRunner() {
-        super(StreamlineMOTD.getInstance(), 0, 1);
+        super(StreamlineMOTD.getInstance(), 0, getTicks());
 
         setRunningTicks(0);
     }
 
+    public static long getTicks() {
+        return StreamlineMOTD.getConfig().getUpdateTicks();
+    }
+
     @Override
     public void run() {
+        if (getPeriod() != getTicks()) {
+            setPeriod(getTicks());
+        }
+
         StreamlineMOTD.getConfig().updatePlayers();
 
-        if (StreamlineMOTD.getConfig().getUpdateType() == MOTDConfig.UpdateType.ON_TICK) {
-            if (getRunningTicks() % StreamlineMOTD.getConfig().getMotdTicks() == 0) {
+        if (StreamlineMOTD.getConfig().getUpdateType() == UpdateType.ON_TICK && getTicks() > 0) {
+            if (StreamlineMOTD.getConfig().getMotdTicks() != -1 && getRunningTicks() % StreamlineMOTD.getConfig().getMotdTicks() == 0) {
                 StreamlineMOTD.getConfig().updateMotd();
             }
-            if (getRunningTicks() % StreamlineMOTD.getConfig().getSampleTicks() == 0) {
+            if (StreamlineMOTD.getConfig().getSampleTicks() != -1 && getRunningTicks() % StreamlineMOTD.getConfig().getSampleTicks() == 0) {
                 StreamlineMOTD.getConfig().updateSample();
             }
         }

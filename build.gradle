@@ -21,9 +21,9 @@ dependencies {
     // StreamlineCore
     boolean includeBapi = rootProject.properties['include-bapi'].toString().toBoolean()
     if (includeBapi) {
-        annotationProcessor(compileOnly("com.github.Streamline-Essentials.StreamlineCore:StreamlineCore-BAPI:${rootProject.properties['streamline.version'] ?: 'master-SNAPSHOT'}"))
+        annotationProcessor(compileOnly("com.github.Streamline-Essentials.StreamlineCore:StreamlineCore-BAPI:master-SNAPSHOT"))
     } else {
-        annotationProcessor(compileOnly("com.github.Streamline-Essentials.StreamlineCore:StreamlineCore-API:${rootProject.properties['streamline.version'] ?: 'master-SNAPSHOT'}"))
+        annotationProcessor(compileOnly("com.github.Streamline-Essentials.StreamlineCore:StreamlineCore-API:master-SNAPSHOT"))
     }
 }
 

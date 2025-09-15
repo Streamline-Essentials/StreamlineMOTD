@@ -1,8 +1,11 @@
 package host.plas.config;
 
+import gg.drak.thebase.async.AsyncUtils;
 import gg.drak.thebase.storage.resources.flat.simple.SimpleConfiguration;
 import gg.drak.thebase.utils.MathUtils;
 import host.plas.StreamlineMOTD;
+import host.plas.data.SelectionType;
+import host.plas.data.UpdateType;
 import lombok.Getter;
 import lombok.Setter;
 import net.streamline.api.SLAPI;
@@ -16,26 +19,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @Setter
 @Getter
 public class MOTDConfig extends SimpleConfiguration {
-    public enum SelectionType {
-        RANDOM,
-        SEQUENTIAL,
-        ;
-    }
-
-    public enum UpdateType {
-        ON_TICK,
-        ON_PING,
-        ;
-    }
-
     private PingedResponse.Players sample;
     private PingedResponse.Protocol version;
     private String description;
@@ -51,32 +42,156 @@ public class MOTDConfig extends SimpleConfiguration {
 
     @Override
     public void init() {
+        getIconFolder(); // Ensure the icon folder exists
+
+        isMotdEnabled();
         getMotdList();
         getMotdSelection();
         getMotdTicks();
 
+        isSampleEnabled();
         getSampleList();
         getSampleSelection();
         getSampleTicks();
 
-        maxPlayers();
-        onlinePlayers();
+        getUpdateType();
+        getUpdateTicks();
 
+        isFaviconEnabled();
+        getFaviconFilePath();
+
+        getOnlineMax();
+        getOnlineCurrent();
+
+        isVersionEnabled();
         versionName();
         versionProtocol();
 
-        getUpdateType();
-
-        isDescriptionEnabled();
-        isSampleEnabled();
-        isVersionEnabled();
-        isFaviconEnabled();
-
-        getIconFolder();
-        getFaviconFilePath();
-
         updateResponse();
     }
+
+    public boolean isMotdEnabled() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("motd.enabled", true);
+    }
+
+    public List<String> getMotdList() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("motd.list", new ArrayList<>(List.of("&7Just a Streamlined Minecraft Server")));
+    }
+
+    public SelectionType getMotdSelection() {
+        reloadResource();
+
+        try {
+            return SelectionType.valueOf(getResource().getOrSetDefault("motd.selection", SelectionType.STATIC.name()).toUpperCase());
+        } catch (Exception e) {
+            StreamlineMOTD.getInstance().logDebug(e.getStackTrace());
+            return SelectionType.STATIC;
+        }
+    }
+
+    public int getMotdTicks() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("motd.ticks", 20);
+    }
+
+    public boolean isSampleEnabled() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("sample.enabled", false);
+    }
+
+    public List<String> getSampleList() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("sample.list", new ArrayList<>(List.of("aJoin on in! &7(&f%motd_online%&9/&f%motd_max%&7)")));
+    }
+
+    public SelectionType getSampleSelection() {
+        reloadResource();
+
+        try {
+            return SelectionType.valueOf(getResource().getOrSetDefault("sample.selection", SelectionType.STATIC.name()).toUpperCase());
+        } catch (Exception e) {
+            StreamlineMOTD.getInstance().logDebug(e.getStackTrace());
+            return SelectionType.STATIC;
+        }
+    }
+
+    public int getSampleTicks() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("sample.ticks", 20);
+    }
+
+    public UpdateType getUpdateType() {
+        reloadResource();
+
+        try {
+            return UpdateType.valueOf(getResource().getOrSetDefault("update.type", UpdateType.NONE.name()).toUpperCase());
+        } catch (Exception e) {
+            StreamlineMOTD.getInstance().logDebug(e.getStackTrace());
+            return UpdateType.NONE;
+        }
+    }
+
+    public long getUpdateTicks() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("update.x-ticks", 1L);
+    }
+
+    private boolean isFaviconEnabled() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("favicon.enabled", true);
+    }
+
+    public String getFaviconFilePath() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("favicon.path", "default");
+    }
+
+    public String getOnlineMax() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("online.max", "100");
+    }
+
+    public String getOnlineCurrent() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("online.current", "%streamline_players_online%");
+    }
+
+    public boolean isVersionEnabled() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("version.enabled", false);
+    }
+
+    public String versionName() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("version.name", "1.21.6");
+    }
+
+    public String versionProtocol() {
+        reloadResource();
+
+        return getResource().getOrSetDefault("version.protocol", "771");
+    }
+
+
+
+    // WORKER FUNCTIONS
+
+
 
     public File getIconFolder() {
         File folder = new File(StreamlineMOTD.getInstance().getDataFolder(), "icons");
@@ -107,7 +222,7 @@ public class MOTDConfig extends SimpleConfiguration {
                 from.setVersion(from.getVersion());
             }
         }
-        if (isDescriptionEnabled()) {
+        if (isMotdEnabled()) {
             if (getDescription() != null) {
                 from.setDescription(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(getDescription())));
             } else {
@@ -130,7 +245,7 @@ public class MOTDConfig extends SimpleConfiguration {
     }
 
     public void updateResponse() {
-        CompletableFuture.runAsync(() -> {
+        AsyncUtils.executeAsync(() -> {
             updateFavicon();
 
             updateMotd();
@@ -142,7 +257,7 @@ public class MOTDConfig extends SimpleConfiguration {
     }
 
     public void updateMotd() {
-        CompletableFuture.runAsync(() -> {
+        AsyncUtils.executeAsync(() -> {
             List<String> list = getMotdList();
             if (list != null) {
                 if (!list.isEmpty()) {
@@ -159,6 +274,9 @@ public class MOTDConfig extends SimpleConfiguration {
 
                             currentMotd++;
                             break;
+                        case STATIC:
+                            setDescription(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(list.get(0))));
+                            break;
                     }
                 }
             }
@@ -166,7 +284,7 @@ public class MOTDConfig extends SimpleConfiguration {
     }
 
     public void updateSample() {
-        CompletableFuture.runAsync(() -> {
+        AsyncUtils.executeAsync(() -> {
             List<String> sampleList = getSampleList();
             if (sampleList != null) {
                 if (! sampleList.isEmpty()) {
@@ -182,6 +300,9 @@ public class MOTDConfig extends SimpleConfiguration {
                             setCurrentSampleText(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(sampleList.get(currentSample))));
 
                             currentSample ++;
+                            break;
+                        case STATIC:
+                            setCurrentSampleText(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(sampleList.get(0))));
                             break;
                     }
                 }
@@ -200,11 +321,6 @@ public class MOTDConfig extends SimpleConfiguration {
                 }
             }
 
-//            if (v == -1) {
-//                setVersion(null);
-//                return;
-//            }
-
             PingedResponse.Protocol version = new PingedResponse.Protocol(ModuleUtils.codedString(ModuleUtils.replacePlaceholders(versionName())), v);
             setVersion(version);
         }
@@ -216,6 +332,8 @@ public class MOTDConfig extends SimpleConfiguration {
     }
 
     public void updateFavicon() {
+        if (! isFaviconEnabled()) return;
+
         String path = getFaviconFilePath();
         if (path != null) {
             if (! path.isEmpty()) {
@@ -319,30 +437,6 @@ public class MOTDConfig extends SimpleConfiguration {
         setSample(players);
     }
 
-    public List<String> getMotdList() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("motd.list", List.of("&7Welcome to &b&lMyServer&7!%newline%&7Join &4&lNOW&7.",
-                "&7We have &b&l%motd_online%&7/&b&l%motd_max% &7players online!%newline%&7Join &4&lNOW&7."));
-    }
-
-    public SelectionType getMotdSelection() {
-        reloadResource();
-
-        try {
-            return SelectionType.valueOf(getResource().getOrSetDefault("motd.selection", "RANDOM").toUpperCase());
-        } catch (Exception e) {
-            StreamlineMOTD.getInstance().logDebug(e.getStackTrace());
-            return SelectionType.RANDOM;
-        }
-    }
-
-    public int getMotdTicks() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("motd.ticks", 20);
-    }
-
     public int adjustPlayers(int real, String from) {
         String adjust = ModuleUtils.replacePlaceholders(from);
 
@@ -359,63 +453,15 @@ public class MOTDConfig extends SimpleConfiguration {
     }
 
     public int getMaxPlayers() {
-        String r = maxPlayers();
+        String r = getOnlineMax();
 
         return adjustPlayers(SLAPI.getInstance().getPlatform().getMaxPlayers(), r);
     }
 
     public int getOnlinePlayers() {
-        String r = onlinePlayers();
+        String r = getOnlineCurrent();
 
         return adjustPlayers(SLAPI.getInstance().getPlatform().getOnlinePlayers().size(), r);
-    }
-
-    public List<String> getSampleList() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("sample.list", List.of("&9Website&7: &bhttps://example.com%newline%&9Discord&7: &bhttps://discord.gg/example",
-                "&9Website&7: &bhttps://example.com%newline%&9Discord&7: &bhttps://discord.gg/example%newline%&9Store&7: &bhttps://example.com/store"));
-    }
-
-    public SelectionType getSampleSelection() {
-        reloadResource();
-
-        try {
-            return SelectionType.valueOf(getResource().getOrSetDefault("sample.selection", "RANDOM").toUpperCase());
-        } catch (Exception e) {
-            StreamlineMOTD.getInstance().logDebug(e.getStackTrace());
-            return SelectionType.RANDOM;
-        }
-    }
-
-    public int getSampleTicks() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("sample.ticks", 20);
-    }
-
-    public String maxPlayers() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("online.max", "100");
-    }
-
-    public String onlinePlayers() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("online.current", "%streamline_players_online%");
-    }
-
-    public String versionName() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("version.name", "1.20.1");
-    }
-
-    public String versionProtocol() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("version.protocol", "");
     }
 
     public String getVersionProtocol() {
@@ -427,46 +473,5 @@ public class MOTDConfig extends SimpleConfiguration {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    public UpdateType getUpdateType() {
-        reloadResource();
-
-        try {
-            return UpdateType.valueOf(getResource().getOrSetDefault("update.type", UpdateType.ON_TICK.name()).toUpperCase());
-        } catch (Exception e) {
-            StreamlineMOTD.getInstance().logDebug(e.getStackTrace());
-            return UpdateType.ON_TICK;
-        }
-    }
-
-    public boolean isDescriptionEnabled() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("motd.enabled", true);
-    }
-
-    public boolean isSampleEnabled() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("sample.enabled", true);
-    }
-
-    public boolean isVersionEnabled() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("version.enabled", true);
-    }
-
-    private boolean isFaviconEnabled() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("favicon.enabled", true);
-    }
-
-    public String getFaviconFilePath() {
-        reloadResource();
-
-        return getResource().getOrSetDefault("favicon.path", "default");
     }
 }
